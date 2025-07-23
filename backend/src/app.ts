@@ -12,8 +12,12 @@ import playerRoutes from "./routes/player";
 import draftRoutes from "./routes/draft";
 import matchupRoutes from "./routes/matchup";
 import { errorHandler } from "./middleware/errorHandler";
+import { swaggerSpec } from "./utils/swagger";
 
 const app = express();
+
+// Swagger UI setup
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Security headers
 app.use(helmet());
@@ -35,38 +39,12 @@ app.use(pinoHttp());
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN || "*",
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   })
 );
 
 // JSON body parser
 app.use(express.json());
-
-// Swagger setup
-const swaggerOptions = {
-  definition: {
-    openapi: "3.0.0",
-    info: {
-      title: "Fantasy Sports Draft & Scoring Platform API",
-      version: "1.0.0",
-      description: "API documentation for the Fantasy Sports platform",
-    },
-    servers: [{ url: "http://localhost:5000" }],
-    components: {
-      securitySchemes: {
-        bearerAuth: {
-          type: "http",
-          scheme: "bearer",
-          bearerFormat: "JWT",
-        },
-      },
-    },
-    security: [{ bearerAuth: [] }],
-  },
-  apis: ["./src/routes/*.ts", "./src/models/*.ts"],
-};
-const swaggerSpec = swaggerJSDoc(swaggerOptions);
-app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Routes
 app.get("/", (req, res) => {
