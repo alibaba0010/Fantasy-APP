@@ -10,6 +10,9 @@ import teamRoutes from "./routes/team";
 import playerRoutes from "./routes/player";
 import draftRoutes from "./routes/draft";
 import matchupRoutes from "./routes/matchup";
+import { errorHandler } from "./middleware/errorHandler";
+import swaggerUi from "swagger-ui-express";
+import swaggerJSDoc from "swagger-jsdoc";
 
 // Load environment variables
 dotenv.config();
@@ -26,6 +29,7 @@ const io = new SocketIOServer(server, {
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(errorHandler);
 
 // MongoDB connection
 const mongoUrl =
@@ -47,7 +51,21 @@ app.use("/api/teams", teamRoutes);
 app.use("/api/players", playerRoutes);
 app.use("/api/draft", draftRoutes);
 app.use("/api/matchups", matchupRoutes);
-// ...
+
+const swaggerOptions = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "Fantasy Sports Draft & Scoring Platform API",
+      version: "1.0.0",
+      description: "API documentation for the Fantasy Sports platform",
+    },
+    servers: [{ url: "http://localhost:5000" }],
+  },
+  apis: ["./src/routes/*.ts", "./src/models/*.ts"],
+};
+const swaggerSpec = swaggerJSDoc(swaggerOptions);
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Socket.IO setup (placeholder)
 io.on("connection", (socket) => {
